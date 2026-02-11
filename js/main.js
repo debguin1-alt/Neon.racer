@@ -69,17 +69,80 @@ class Game {
     async loadAssets() {
         console.log('Loading assets...');
         
-        // Generate placeholder sprites
-        this.sprites.generateGradientSprite('player', 40, 60, '#00f5ff', '#0088aa');
-        this.sprites.generateGradientSprite('enemy_car', 40, 60, '#ff006e', '#aa0044');
-        this.sprites.generateGradientSprite('enemy_truck', 45, 80, '#8338ec', '#5500aa');
+        try {
+            this.ui.updateLoadingProgress(10);
+            
+            // Load all sprite images
+            try {
+                await this.sprites.load('vehicles', 'assets/sprites/vehicles.png', {
+                    frameWidth: 40,
+                    frameHeight: 60,
+                    frames: 6
+                });
+                
+                await this.sprites.load('trucks', 'assets/sprites/trucks.png', {
+                    frameWidth: 45,
+                    frameHeight: 80,
+                    frames: 3
+                });
+                
+                await this.sprites.load('coin', 'assets/sprites/coin.png', {
+                    frameWidth: 32,
+                    frameHeight: 32,
+                    frames: 8
+                });
+                
+                await this.sprites.load('powerups', 'assets/sprites/powerups.png', {
+                    frameWidth: 40,
+                    frameHeight: 40,
+                    frames: 3
+                });
+                
+                await this.sprites.load('road', 'assets/sprites/road.png');
+                await this.sprites.load('particle', 'assets/sprites/particle.png');
+                
+                console.log('✓ Loaded all sprite assets');
+            } catch (err) {
+                console.warn('Failed to load some sprites, using fallbacks:', err);
+                // Generate placeholder sprites if loading fails
+                this.sprites.generateGradientSprite('player', 40, 60, '#00f5ff', '#0088aa');
+                this.sprites.generateGradientSprite('enemy_car', 40, 60, '#ff006e', '#aa0044');
+                this.sprites.generateGradientSprite('enemy_truck', 45, 80, '#8338ec', '#5500aa');
+            }
+            
+            this.ui.updateLoadingProgress(50);
+            
+            // Load all sound effects
+            try {
+                await this.audio.loadSound('coin', 'assets/sounds/coin.wav');
+                await this.audio.loadSound('crash', 'assets/sounds/crash.wav');
+                await this.audio.loadSound('powerup', 'assets/sounds/powerup.wav');
+                await this.audio.loadSound('menu_select', 'assets/sounds/menu_select.wav');
+                await this.audio.loadSound('levelup', 'assets/sounds/levelup.wav');
+                
+                console.log('✓ Loaded all sound effects');
+            } catch (err) {
+                console.warn('Failed to load sounds, will use beep fallbacks:', err);
+            }
+            
+            this.ui.updateLoadingProgress(80);
+            
+            // Load music
+            try {
+                await this.audio.loadMusic('engine', 'assets/sounds/engine.wav');
+                console.log('✓ Loaded background music');
+            } catch (err) {
+                console.warn('Failed to load music:', err);
+            }
+            
+            this.ui.updateLoadingProgress(100);
+            
+        } catch (err) {
+            console.error('Error loading assets:', err);
+            this.ui.updateLoadingProgress(100);
+        }
         
-        // Load sounds (using beep fallbacks)
-        // In production, you would load actual audio files here
-        
-        this.ui.updateLoadingProgress(100);
-        
-        await new Promise(resolve => setTimeout(resolve, 500)); // Brief delay to show loading
+        await new Promise(resolve => setTimeout(resolve, 500));
     }
     
     initSystems() {
@@ -92,11 +155,16 @@ class Game {
         const playerY = this.engine.height - 120;
         
         this.player = new Player(this.engine, centerX, playerY);
-        this.player.setSprite(this.sprites.get('player'));
+        this.player.setSprite(this.sprites.get('vehicles'));
         
         this.enemyManager = new EnemyManager(this.engine, this.collision);
+        this.enemyManager.setSprites(this.sprites);
+        
         this.coinManager = new CoinManager(this.engine, this.collision);
+        this.coinManager.setSprite(this.sprites.get('coin'));
+        
         this.powerupManager = new PowerUpManager(this.engine, this.collision);
+        this.powerupManager.setSprite(this.sprites.get('powerups'));
         
         // Apply settings
         const settings = this.storage.loadSettings();
@@ -129,13 +197,21 @@ class Game {
     startGame() {
         console.log('Starting game...');
         
-        this.state = 'playing';
-        this.resetGame();
-        this.ui.showScreen('game');
-        this.loop.start();
-        
-        // Play start sound
-        this.audio.generateBeep(440, 0.1, 'square');
+        try {
+            this.state = 'playing';
+            this.resetGame();
+            this.ui.showScreen('game');
+            this.loop.start();
+            
+            // Play start sound and background music
+            this.audio.playSound('menu_select');
+            this.audio.playMusic('engine');
+            
+            console.log('Game started successfully!');
+        } catch (err) {
+            console.error('Error starting game:', err);
+            alert('Error starting game: ' + err.message);
+        }
     }
     
     pauseGame() {
@@ -173,6 +249,7 @@ class Game {
         
         this.state = 'gameover';
         this.loop.stop();
+        this.audio.stopMusic();
         
         // Save score and stats
         const levelData = this.levelManager.getLevelData();
@@ -182,9 +259,6 @@ class Game {
         
         // Show game over screen
         this.ui.showGameOver(levelData, isNewHighScore);
-        
-        // Play crash sound
-        this.audio.generateBeep(200, 0.3, 'sawtooth');
     }
     
     resetGame() {
@@ -265,6 +339,7 @@ class Game {
                 this.player.y + this.player.height / 2
             );
             this.player.die();
+            this.audio.playSound('crash');
             this.endGame();
             return;
         }
@@ -274,7 +349,7 @@ class Game {
         for (const coin of collectedCoins) {
             this.levelManager.addCoin();
             this.particles.createCoinEffect(coin.x, coin.y);
-            this.audio.generateBeep(880, 0.05, 'sine');
+            this.audio.playSound('coin');
         }
         
         // Check powerup collisions
@@ -289,7 +364,7 @@ class Game {
                 15,
                 { color: powerup.color }
             );
-            this.audio.generateBeep(660, 0.1, 'square');
+            this.audio.playSound('powerup');
         }
     }
     
@@ -317,14 +392,34 @@ class Game {
 
 // Initialize game when page loads
 window.addEventListener('load', async () => {
-    const game = new Game();
-    const success = await game.init();
+    console.log('Page loaded, initializing game...');
     
-    if (!success) {
-        console.error('Failed to initialize game');
-        alert('Failed to load game. Please refresh the page.');
+    try {
+        const game = new Game();
+        const success = await game.init();
+        
+        if (!success) {
+            console.error('Failed to initialize game');
+            alert('Failed to load game. Please refresh the page.');
+            return;
+        }
+        
+        console.log('Game initialized successfully!');
+        
+        // Store game instance globally for debugging
+        window.game = game;
+        
+    } catch (err) {
+        console.error('Fatal error initializing game:', err);
+        alert('Error loading game: ' + err.message + '\nPlease check console for details.');
     }
-    
-    // Store game instance globally for debugging
-    window.game = game;
+});
+
+// Add error handler for unhandled errors
+window.addEventListener('error', (event) => {
+    console.error('Unhandled error:', event.error);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+    console.error('Unhandled promise rejection:', event.reason);
 });
