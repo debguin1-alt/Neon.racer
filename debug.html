@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Racer - Debug Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #0a0e27;
+            color: #00f5ff;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            background: #1a1f3a;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #00f5ff;
+            border-radius: 5px;
+        }
+        .pass { color: #00ff00; }
+        .fail { color: #ff006e; }
+        .warning { color: #ffbe0b; }
+        button {
+            background: #00f5ff;
+            color: #0a0e27;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #00ccff;
+        }
+        #console-output {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Neon Racer - Debug Test Page</h1>
+    <p>This page tests if all game components are loading correctly.</p>
+
+    <div class="test-section">
+        <h2>File Availability Tests</h2>
+        <div id="file-tests">Running tests...</div>
+        <button onclick="runFileTests()">Re-run File Tests</button>
+    </div>
+
+    <div class="test-section">
+        <h2>JavaScript Object Tests</h2>
+        <div id="object-tests">Running tests...</div>
+        <button onclick="runObjectTests()">Re-run Object Tests</button>
+    </div>
+
+    <div class="test-section">
+        <h2>DOM Tests</h2>
+        <div id="dom-tests">Running tests...</div>
+        <button onclick="runDomTests()">Re-run DOM Tests</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <div id="console-output"></div>
+        <button onclick="clearConsole()">Clear Console</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Actions</h2>
+        <button onclick="window.location.href='index.html'">Go to Game</button>
+        <button onclick="location.reload()">Reload Page</button>
+    </div>
+
+    <script>
+        // Intercept console logs
+        const consoleOutput = document.getElementById('console-output');
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const line = document.createElement('div');
+            line.textContent = '> ' + args.join(' ');
+            consoleOutput.appendChild(line);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            const line = document.createElement('div');
+            line.style.color = '#ff006e';
+            line.textContent = '❌ ' + args.join(' ');
+            consoleOutput.appendChild(line);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            const line = document.createElement('div');
+            line.style.color = '#ffbe0b';
+            line.textContent = '⚠️  ' + args.join(' ');
+            consoleOutput.appendChild(line);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+
+        function clearConsole() {
+            consoleOutput.innerHTML = '';
+        }
+
+        // File tests
+        async function runFileTests() {
+            const output = document.getElementById('file-tests');
+            output.innerHTML = '<p>Testing file availability...</p>';
+            
+            const files = [
+                'css/style.css',
+                'css/ui.css',
+                'js/core/engine.js',
+                'js/core/loop.js',
+                'js/core/collision.js',
+                'js/game/player.js',
+                'js/game/enemy.js',
+                'js/game/road.js',
+                'js/game/coins.js',
+                'js/game/powerups.js',
+                'js/game/levels.js',
+                'js/system/sprite.js',
+                'js/system/audio.js',
+                'js/system/controls.js',
+                'js/system/storage.js',
+                'js/system/particles.js',
+                'js/ui/ui-manager.js',
+                'js/main.js',
+                'assets/sprites/vehicles.png',
+                'assets/sprites/road.png',
+                'assets/sounds/coin.wav',
+                'assets/sounds/crash.wav',
+                'assets/sounds/engine.wav'
+            ];
+
+            let passed = 0;
+            let failed = 0;
+
+            for (const file of files) {
+                try {
+                    const response = await fetch(file, { method: 'HEAD' });
+                    if (response.ok) {
+                        output.innerHTML += `<div class="pass">✓ ${file}</div>`;
+                        passed++;
+                    } else {
+                        output.innerHTML += `<div class="fail">✗ ${file} (${response.status})</div>`;
+                        failed++;
+                        console.error(`File not found: ${file}`);
+                    }
+                } catch (err) {
+                    output.innerHTML += `<div class="fail">✗ ${file} (Error: ${err.message})</div>`;
+                    failed++;
+                    console.error(`Error loading file ${file}:`, err);
+                }
+            }
+
+            output.innerHTML += `<p><strong>Results: ${passed} passed, ${failed} failed</strong></p>`;
+            console.log(`File tests complete: ${passed}/${files.length} files found`);
+        }
+
+        // Object tests
+        function runObjectTests() {
+            const output = document.getElementById('object-tests');
+            output.innerHTML = '<p>Testing JavaScript objects...</p>';
+
+            const objects = [
+                'GameEngine',
+                'GameLoop',
+                'CollisionSystem',
+                'SpriteManager',
+                'AudioManager',
+                'ControlsManager',
+                'StorageManager',
+                'ParticleSystem',
+                'Player',
+                'Enemy',
+                'EnemyManager',
+                'Road',
+                'Background',
+                'Coin',
+                'CoinManager',
+                'PowerUp',
+                'PowerUpManager',
+                'LevelManager',
+                'UIManager',
+                'Game'
+            ];
+
+            let passed = 0;
+            let failed = 0;
+
+            for (const obj of objects) {
+                if (typeof window[obj] !== 'undefined') {
+                    output.innerHTML += `<div class="pass">✓ ${obj} is defined</div>`;
+                    passed++;
+                    console.log(`Object ${obj} is available`);
+                } else {
+                    output.innerHTML += `<div class="fail">✗ ${obj} is undefined</div>`;
+                    failed++;
+                    console.error(`Object ${obj} is not defined`);
+                }
+            }
+
+            output.innerHTML += `<p><strong>Results: ${passed} passed, ${failed} failed</strong></p>`;
+        }
+
+        // DOM tests
+        function runDomTests() {
+            const output = document.getElementById('dom-tests');
+            output.innerHTML = '<p>Testing DOM elements...</p>';
+
+            const elements = {
+                'loading-screen': 'Loading Screen',
+                'menu-screen': 'Menu Screen',
+                'game-screen': 'Game Screen',
+                'pause-screen': 'Pause Screen',
+                'gameover-screen': 'Game Over Screen',
+                'settings-screen': 'Settings Screen',
+                'game-canvas': 'Game Canvas',
+                'btn-start': 'Start Button',
+                'btn-pause': 'Pause Button'
+            };
+
+            let passed = 0;
+            let failed = 0;
+
+            for (const [id, name] of Object.entries(elements)) {
+                const element = document.getElementById(id);
+                if (element) {
+                    output.innerHTML += `<div class="pass">✓ ${name} found</div>`;
+                    passed++;
+                } else {
+                    output.innerHTML += `<div class="fail">✗ ${name} not found (id: ${id})</div>`;
+                    failed++;
+                    console.error(`DOM element not found: ${id}`);
+                }
+            }
+
+            output.innerHTML += `<p><strong>Results: ${passed} passed, ${failed} failed</strong></p>`;
+        }
+
+        // Run all tests on load
+        window.addEventListener('load', () => {
+            console.log('Debug page loaded');
+            runFileTests();
+            
+            // Wait a bit for scripts to load
+            setTimeout(() => {
+                runObjectTests();
+                runDomTests();
+            }, 1000);
+        });
+    </script>
+
+    <!-- Load game scripts to test -->
+    <script src="js/core/engine.js"></script>
+    <script src="js/core/loop.js"></script>
+    <script src="js/core/collision.js"></script>
+    <script src="js/system/sprite.js"></script>
+    <script src="js/system/audio.js"></script>
+    <script src="js/system/controls.js"></script>
+    <script src="js/system/storage.js"></script>
+    <script src="js/system/particles.js"></script>
+    <script src="js/game/player.js"></script>
+    <script src="js/game/enemy.js"></script>
+    <script src="js/game/road.js"></script>
+    <script src="js/game/coins.js"></script>
+    <script src="js/game/powerups.js"></script>
+    <script src="js/game/levels.js"></script>
+    <script src="js/ui/ui-manager.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
