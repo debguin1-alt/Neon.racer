@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0e27">
+    <meta name="description" content="Retro arcade racing game - dodge traffic, collect coins, and set high scores!">
+    
+    <title>Neon Racer - Arcade Racing</title>
+    
+    <!-- PWA manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-512.png">
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" href="css/style.css" as="style">
+    <link rel="preload" href="js/main.js" as="script">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/ui.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h1 class="loading-title">NEON RACER</h1>
+            <p class="loading-text">Loading...</p>
+            <div class="loading-bar">
+                <div class="loading-progress" id="loading-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Menu -->
+    <div id="menu-screen" class="screen menu-screen hidden">
+        <div class="menu-content">
+            <h1 class="game-title">
+                <span class="title-neon">NEON</span>
+                <span class="title-racer">RACER</span>
+            </h1>
+            <div class="menu-stats">
+                <div class="stat-item">
+                    <span class="stat-label">High Score</span>
+                    <span class="stat-value" id="menu-highscore">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Total Coins</span>
+                    <span class="stat-value" id="menu-coins">0</span>
+                </div>
+            </div>
+            <div class="menu-buttons">
+                <button class="btn btn-primary" id="btn-start">START GAME</button>
+                <button class="btn btn-secondary" id="btn-controls">CONTROLS</button>
+                <button class="btn btn-secondary" id="btn-settings">SETTINGS</button>
+            </div>
+            <div class="menu-footer">
+                <p>Use ← → or touch controls to steer</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen game-screen hidden">
+        <canvas id="game-canvas"></canvas>
+        
+        <!-- Game UI Overlay -->
+        <div class="game-ui">
+            <div class="ui-top">
+                <div class="ui-stat">
+                    <span class="ui-label">SCORE</span>
+                    <span class="ui-value" id="game-score">0</span>
+                </div>
+                <div class="ui-stat">
+                    <span class="ui-label">LEVEL</span>
+                    <span class="ui-value" id="game-level">1</span>
+                </div>
+                <div class="ui-stat">
+                    <span class="ui-label">COINS</span>
+                    <span class="ui-value" id="game-coins">0</span>
+                </div>
+            </div>
+            
+            <div class="ui-bottom">
+                <div class="speed-meter">
+                    <div class="speed-label">SPEED</div>
+                    <div class="speed-bar">
+                        <div class="speed-fill" id="speed-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Touch Controls -->
+        <div class="touch-controls" id="touch-controls">
+            <button class="touch-btn touch-left" id="touch-left">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                </svg>
+            </button>
+            <button class="touch-btn touch-right" id="touch-right">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Pause Button -->
+        <button class="pause-btn" id="pause-btn">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Pause Screen -->
+    <div id="pause-screen" class="screen overlay-screen hidden">
+        <div class="overlay-content">
+            <h2 class="overlay-title">PAUSED</h2>
+            <div class="overlay-buttons">
+                <button class="btn btn-primary" id="btn-resume">RESUME</button>
+                <button class="btn btn-secondary" id="btn-restart">RESTART</button>
+                <button class="btn btn-secondary" id="btn-menu">MAIN MENU</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameover-screen" class="screen overlay-screen hidden">
+        <div class="overlay-content">
+            <h2 class="overlay-title game-over-title">GAME OVER</h2>
+            <div class="game-over-stats">
+                <div class="final-stat">
+                    <span class="final-label">Final Score</span>
+                    <span class="final-value" id="final-score">0</span>
+                </div>
+                <div class="final-stat">
+                    <span class="final-label">Level Reached</span>
+                    <span class="final-value" id="final-level">1</span>
+                </div>
+                <div class="final-stat">
+                    <span class="final-label">Coins Collected</span>
+                    <span class="final-value" id="final-coins">0</span>
+                </div>
+                <div class="final-stat highlight" id="highscore-container">
+                    <span class="final-label">🏆 New High Score!</span>
+                </div>
+            </div>
+            <div class="overlay-buttons">
+                <button class="btn btn-primary" id="btn-play-again">PLAY AGAIN</button>
+                <button class="btn btn-secondary" id="btn-menu-gameover">MAIN MENU</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Screen -->
+    <div id="settings-screen" class="screen overlay-screen hidden">
+        <div class="overlay-content">
+            <h2 class="overlay-title">SETTINGS</h2>
+            <div class="settings-panel">
+                <div class="setting-item">
+                    <label for="sound-toggle">Sound Effects</label>
+                    <input type="checkbox" id="sound-toggle" class="toggle-switch" checked>
+                </div>
+                <div class="setting-item">
+                    <label for="music-toggle">Music</label>
+                    <input type="checkbox" id="music-toggle" class="toggle-switch" checked>
+                </div>
+                <div class="setting-item">
+                    <label for="particles-toggle">Particle Effects</label>
+                    <input type="checkbox" id="particles-toggle" class="toggle-switch" checked>
+                </div>
+            </div>
+            <div class="overlay-buttons">
+                <button class="btn btn-primary" id="btn-settings-close">CLOSE</button>
+                <button class="btn btn-danger" id="btn-reset-data">RESET ALL DATA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/core/engine.js"></script>
+    <script src="js/core/loop.js"></script>
+    <script src="js/core/collision.js"></script>
+    <script src="js/system/sprite.js"></script>
+    <script src="js/system/audio.js"></script>
+    <script src="js/system/controls.js"></script>
+    <script src="js/system/storage.js"></script>
+    <script src="js/system/particles.js"></script>
+    <script src="js/game/player.js"></script>
+    <script src="js/game/enemy.js"></script>
+    <script src="js/game/road.js"></script>
+    <script src="js/game/coins.js"></script>
+    <script src="js/game/powerups.js"></script>
+    <script src="js/game/levels.js"></script>
+    <script src="js/ui/ui-manager.js"></script>
+    <script src="js/main.js"></script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed'));
+            });
+        }
+    </script>
+</body>
+</html>
