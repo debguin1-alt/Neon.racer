@@ -1,0 +1,238 @@
+/* Neon Racer - Main Styles */
+/* Retro Arcade Aesthetic with Modern Polish */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap');
+
+:root {
+    /* Color Palette - Cyberpunk Neon */
+    --neon-pink: #ff006e;
+    --neon-cyan: #00f5ff;
+    --neon-purple: #8338ec;
+    --neon-yellow: #ffbe0b;
+    --dark-bg: #0a0e27;
+    --darker-bg: #050814;
+    --mid-dark: #1a1f3a;
+    --text-primary: #ffffff;
+    --text-secondary: #a8b2d1;
+    
+    /* Game Specific */
+    --road-dark: #1a1a2e;
+    --road-line: #ffbe0b;
+    --grass-color: #16213e;
+    
+    /* Shadows & Glows */
+    --glow-pink: 0 0 20px var(--neon-pink), 0 0 40px var(--neon-pink);
+    --glow-cyan: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-cyan);
+    --glow-purple: 0 0 20px var(--neon-purple), 0 0 40px var(--neon-purple);
+    
+    /* Typography */
+    --font-display: 'Orbitron', monospace;
+    --font-body: 'Rajdhani', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: var(--font-body);
+    background: var(--darker-bg);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    background: linear-gradient(180deg, var(--darker-bg) 0%, var(--dark-bg) 100%);
+    position: relative;
+}
+
+/* Animated Grid Background */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(var(--neon-cyan) 1px, transparent 1px),
+        linear-gradient(90deg, var(--neon-cyan) 1px, transparent 1px);
+    background-size: 50px 50px;
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Screen Management */
+.screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+    z-index: 10;
+}
+
+.screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.overlay-screen {
+    background: rgba(10, 14, 39, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+}
+
+/* Loading Screen */
+.loading-screen {
+    background: var(--darker-bg);
+    z-index: 1000;
+}
+
+.loading-content {
+    text-align: center;
+    animation: fadeInUp 0.8s ease;
+}
+
+.loading-spinner {
+    width: 80px;
+    height: 80px;
+    border: 4px solid var(--mid-dark);
+    border-top: 4px solid var(--neon-cyan);
+    border-radius: 50%;
+    margin: 0 auto 2rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-title {
+    font-family: var(--font-display);
+    font-size: 4rem;
+    font-weight: 900;
+    background: linear-gradient(45deg, var(--neon-pink), var(--neon-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+    letter-spacing: 0.2em;
+    text-shadow: var(--glow-cyan);
+}
+
+.loading-text {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    font-weight: 300;
+}
+
+.loading-bar {
+    width: 300px;
+    height: 6px;
+    background: var(--mid-dark);
+    border-radius: 3px;
+    margin: 0 auto;
+    overflow: hidden;
+    position: relative;
+}
+
+.loading-progress {
+    height: 100%;
+    background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.3s ease;
+    box-shadow: var(--glow-cyan);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Canvas */
+#game-canvas {
+    display: block;
+    background: var(--road-dark);
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    width: 100%;
+    height: 100%;
+    max-width: 800px;
+    max-height: 100vh;
+    margin: 0 auto;
+}
+
+/* Responsive Canvas Container */
+.game-screen {
+    background: var(--darker-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    .loading-title {
+        font-size: 2.5rem;
+    }
+    
+    .loading-bar {
+        width: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .loading-title {
+        font-size: 2rem;
+    }
+    
+    .loading-spinner {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+/* Performance Optimizations */
+.screen, .overlay-screen {
+    will-change: opacity, visibility;
+}
+
+canvas {
+    will-change: transform;
+}
+
+/* Prevent text selection during gameplay */
+.game-screen {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* High DPI Display Support */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    #game-canvas {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
