@@ -1,0 +1,13 @@
+{
+  "frames": 6,
+  "frameWidth": 40,
+  "frameHeight": 60,
+  "sprites": {
+    "player": 0,
+    "enemy_1": 1,
+    "enemy_2": 2,
+    "enemy_3": 3,
+    "enemy_4": 4,
+    "enemy_5": 5
+  }
+}
