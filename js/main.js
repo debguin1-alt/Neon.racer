@@ -142,10 +142,8 @@ class Game {
         this.enemyManager.setSprites(this.sprites);
         
         this.coinManager = new CoinManager(this.engine, this.collision);
-        this.coinManager.setSprite(this.sprites.get('coin'));
         
         this.powerupManager = new PowerUpManager(this.engine, this.collision);
-        this.powerupManager.setSprite(this.sprites.get('powerups'));
         
         // Apply settings
         const settings = this.storage.loadSettings();
